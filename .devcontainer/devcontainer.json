@@ -1,0 +1,66 @@
+{
+  "name": "MedCalc Mini",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+				"Anthropic.claude-code",
+        // TypeScript & Node
+        "ms-vscode.vscode-typescript-next",
+        // Formatting & linting
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        // Tailwind
+        "bradlc.vscode-tailwindcss",
+        // Docker
+        "ms-azuretools.vscode-docker",
+        // PostgreSQL — query your DB directly from VS Code
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        // Testing — runs Jest inline in the editor
+        "orta.vscode-jest",
+        // Quality of life
+        "christian-kohler.path-intellisense",
+        "formulahendry.auto-rename-tag",
+        "streetsidesoftware.code-spell-checker",
+        "usernamehw.errorlens",
+        "aaron-bond.better-comments"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "js/ts.preferences.importModuleSpecifier": "relative",
+        // Pre-configured Postgres connection for SQLTools
+        // Credentials mirror .devcontainer/.env (update both together)
+        "sqltools.connections": [
+          {
+            "name": "MedCalc Postgres",
+            "driver": "PostgreSQL",
+            "server": "db",
+            "port": 5432,
+            "database": "medcalc",
+            "username": "postgres",
+            "password": "postgres"
+          }
+        ]
+      }
+    }
+  },
+
+  // Ports forwarded to your Mac so you can open them in any browser or client
+  "forwardPorts": [3000, 3001, 5432],
+  "portsAttributes": {
+    "3000": { "label": "Next.js Frontend", "onAutoForward": "openBrowser" },
+    "3001": { "label": "Express API", "onAutoForward": "silent" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
+  },
+
+  "postCreateCommand": "zsh .devcontainer/postCreate.sh"
+}

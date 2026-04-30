@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:20
+    volumes:
+      # Mounts your local project folder into the container
+      # :cached improves performance on Mac (including OrbStack)
+      - ..:/workspace:cached
+      # Named volumes shadow the bind mount for node_modules,
+      # keeping them inside Docker and off the host filesystem
+      - frontend-modules:${WORKSPACE}/frontend/node_modules
+      - backend-modules:${WORKSPACE}/backend/node_modules
+    # Keeps the container alive so VS Code can connect
+    command: sleep infinity
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NODE_ENV=${NODE_ENV}
+      - SHELL=${SHELL}
+    depends_on:
+      db:
+        # Won't start until Postgres passes its health check
+        condition: service_healthy
+    networks:
+      - medcalc-network
+
+  # PostgreSQL 16 — latest stable
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      # Named volume persists your data between container restarts
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    # Health check ensures Postgres is actually ready to accept connections
+    # (not just that the container started)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - medcalc-network
+
+volumes:
+  postgres-data:
+    name: medcalc-postgres-data
+  frontend-modules:
+    name: medcalc-frontend-modules
+  backend-modules:
+    name: medcalc-backend-modules
+
+networks:
+  medcalc-network:
+    name: medcalc-network
+    driver: bridge
